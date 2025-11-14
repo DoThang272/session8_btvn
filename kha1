@@ -1,0 +1,32 @@
+create table kha1.order_detail(
+	id serial primary key,
+	order_id int , 
+	product_name varchar(100),
+	quantity int,
+	unit_price numeric
+);
+
+--1a
+create or replace  procedure calculate_order_total(
+	order_id_input int, 
+	out total numeric
+) 
+LANGUAGE plpgsql
+as $$
+begin
+	select sum(quantity * unit_price) into total
+	from kha1.order_detail od ;
+
+end;
+
+$$;
+do $$
+DECLARE 
+	total numeric;
+begin
+	total := 0;
+	call calculate_order_total(1, total);
+	raise notice 'Tong don hang: %', total;
+end;
+$$;
+
