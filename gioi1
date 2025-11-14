@@ -1,0 +1,49 @@
+create table gioi1.employees(
+	emp_id serial primary key,
+	emp_name varchar(100),
+	job_level int,
+	salary numeric
+);
+
+create or replace procedure adjust_salary(
+	p_emp_id int,
+	out p_new_salary numeric
+)
+LANGUAGE plpgsql
+as
+$$
+DECLARE
+	name_emp_in varchar(200);
+	job_lv int;
+	salary_in numeric;
+	percent_by_lv numeric :=1;
+begin
+	select  emp_name, job_level, salary into name_emp_in, job_lv, salary_in
+	from gioi1.employees e
+	where emp_id = p_emp_id; 
+
+	if job_lv = 1 then 
+		percent_by_lv:=1.05 ;
+	elsif job_lv =2 then 
+		percent_by_lv:=1.1;
+	elsif job_lv = 3 then 
+		percent_by_lv:=1.15;
+	end if;
+	p_new_salary := salary_in * percent_by_lv;
+	raise notice 'Luong cua % la %' , name_emp_in, p_new_salary;
+end;
+
+$$;
+
+do $$
+DECLARE 
+	p_new_salary numeric;
+begin
+	p_new_salary := 0;
+	-- call adjust_salary(1 , p_new_salary);
+	call adjust_salary(2 , p_new_salary);
+	-- call adjust_salary(3 , p_new_salary);
+	select p_new_salary;
+	
+end;
+$$;
