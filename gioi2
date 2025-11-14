@@ -1,0 +1,42 @@
+create table gioi2.products(
+	id serial primary key,
+	product_name varchar(100),
+	price numeric,
+	dis_pecent int
+);
+
+create or replace procedure calculate_discount(
+	p_id INT,
+	OUT p_final_price NUMERIC(10,2)
+)
+LANGUAGE plpgsql
+as $$
+DECLARE
+	p_price numeric;
+	p_name varchar(200);
+	p_dis int; 
+begin
+	select price, dis_pecent, product_name into p_price, p_dis, p_name
+	from gioi2.products p
+	where p_id = id;
+	if p_dis >50 then p_dis := 50; 
+	end if;
+	p_final_price := p_price - (p_price*p_dis/100);
+	raise notice '% co gia la: %' , p_name , p_final_price;
+	alter table gioi2.products 
+	add column final_price numeric(10,2);
+	update gioi2.products
+	set final_price = p_final_price
+	where p_id = id;
+	
+end;
+$$;
+
+do $$
+DECLARE 
+	v_final_price numeric(10,2);
+begin
+	v_final_price := 0;
+	call calculate_discount(4, v_final_price);
+end;
+$$;
